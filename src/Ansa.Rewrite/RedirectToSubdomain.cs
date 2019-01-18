@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Net.Http.Headers;
 
@@ -51,7 +53,9 @@ namespace Ansa.Rewrite
                 return;
             }
 
-            string newPath = request.Scheme + "://" + _subdomain + "." + host.Value + request.PathBase + request.Path + request.QueryString;
+            var lowerDomains = _subdomain + "." + host.Value;
+            var newHostString = (host.Port is null) ? new HostString(lowerDomains) : new HostString(lowerDomains, (int)host.Port);
+            var newPath = UriHelper.BuildAbsolute(request.Scheme, newHostString, request.PathBase, request.Path, request.QueryString);
 
             var response = context.HttpContext.Response;
             response.StatusCode = _statusCode;
